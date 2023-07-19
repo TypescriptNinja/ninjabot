@@ -1,3 +1,8 @@
+import tmi from 'tmi.js';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import BaseCommand from './base-command';
+import type { MessageHandler } from '../services/chat-service';
 
 export const questions = [
     'If you could meet any historical figure, who would you choose and why?',
@@ -26,3 +31,43 @@ export const questions = [
     'If you could be a character in any movie, who would you be?',
     'What\'s the most challenging thing you\'ve ever done?'
 ];
+
+export default class Questions extends BaseCommand {
+    private _questionList: string[] = [];
+    private _awkwardSilence = (Math.round(Math.random() * 2) + 3) * 60 * 1000;
+    private _timeOut = 0;
+    private _unsubscribe: Subject<void> = new Subject();
+
+    constructor() {
+        super();
+    }
+
+    public init(): void {
+        this._chatService.addCommand('question', this.questionHandler);
+        this._chatService.$chatted.pipe(takeUntil(this._unsubscribe)).subscribe(() => {
+            // clearTimeout(this._timeOut);
+            // this._timeOut = 0;
+            // this._awkwardSilence = (Math.round(Math.random() * 2) + 3) * 60 * 1000;
+            // // @ts-ignore
+            // this._timeOut = setTimeout(() => this.sayQuestion(), this._awkwardSilence);
+        });
+    }
+
+    public questionHandler: MessageHandler = (_channel: string, _tags: tmi.ChatUserstate, _message: string, _self: boolean): void => {
+        this.sayQuestion();
+    }
+
+    private sayQuestion(): void {
+            if (!this._questionList.length) {
+                this._questionList = questions.slice();
+            }
+            const question = this._questionList.splice(Math.floor(Math.random() * this._questionList.length), 1)[0];
+            this._chatService.say(question);
+    }
+
+    public destroy(): void {
+        this._unsubscribe.next();
+        this._unsubscribe.complete();
+    }
+
+}

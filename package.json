@@ -13,8 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.3.1",
+    "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "tmi.js": "^1.8.5"
+    "tmi.js": "^1.8.5",
+    "typedi": "^0.10.0"
   },
   "devDependencies": {
     "@types/node": "^20.4.2",
